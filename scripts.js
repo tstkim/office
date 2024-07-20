@@ -1,22 +1,33 @@
-// 드롭앤드롭 방식의 메뉴
-document.addEventListener('DOMContentLoaded', () => {
-    const menu = document.getElementById('menu');
-    
-    menu.addEventListener('dragstart', (e) => {
-        e.dataTransfer.setData('text/plain', e.target.innerText);
-    });
+const menu = document.getElementById('menu');
+const items = menu.querySelectorAll('li');
 
-    menu.addEventListener('dragover', (e) => {
-        e.preventDefault();
-    });
-
-    menu.addEventListener('drop', (e) => {
-        e.preventDefault();
-        const data = e.dataTransfer.getData('text/plain');
-        const target = e.target;
-        
-        if (target.tagName === 'LI') {
-            target.innerText = data;
-        }
-    });
+items.forEach(item => {
+    item.addEventListener('dragstart', dragStart);
+    item.addEventListener('dragover', dragOver);
+    item.addEventListener('drop', drop);
+    item.addEventListener('dragend', dragEnd);
 });
+
+function dragStart(e) {
+    e.dataTransfer.setData('text/plain', e.target.innerText);
+    e.target.classList.add('dragging');
+}
+
+function dragOver(e) {
+    e.preventDefault();
+    const draggingItem = document.querySelector('.dragging');
+    const currentItem = e.target;
+    if (currentItem !== draggingItem) {
+        menu.insertBefore(draggingItem, currentItem);
+    }
+}
+
+function drop(e) {
+    e.preventDefault();
+    const data = e.dataTransfer.getData('text');
+    e.target.classList.remove('dragging');
+}
+
+function dragEnd(e) {
+    e.target.classList.remove('dragging');
+}

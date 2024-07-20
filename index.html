@@ -1,48 +1,41 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>나의 웹사이트</title>
+    <title>나를 소개하는 웹사이트</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <header>
-        <div class="container">
-            <h1>안녕하세요, 나는 [당신의 이름]입니다!</h1>
-            <nav>
-                <ul id="menu">
-                    <li><a href="#about">소개</a></li>
-                    <li><a href="#services">서비스</a></li>
-                    <li><a href="#contact">연락처</a></li>
-                </ul>
-            </nav>
-        </div>
+        <h1>나를 소개합니다</h1>
+        <nav id="menu">
+            <ul>
+                <li draggable="true"><a href="#home">홈</a></li>
+                <li draggable="true"><a href="#about">소개</a></li>
+                <li draggable="true"><a href="#services">서비스</a></li>
+                <li draggable="true"><a href="#contact">연락처</a></li>
+            </ul>
+        </nav>
     </header>
-
     <main>
+        <section id="home">
+            <h2>홈</h2>
+            <p>여기는 홈페이지입니다. 나에 대한 기본 정보를 소개합니다.</p>
+        </section>
         <section id="about">
             <h2>소개</h2>
-            <p>여기는 나의 소개 페이지입니다. 여기서 나의 배경과 경험에 대해 알아보세요.</p>
+            <p>안녕하세요, 저는 한국에서 태어나 인터넷에서 상품을 판매하는 CEO입니다. 스포츠용품과 캠핑용품을 판매하고 있습니다.</p>
         </section>
-
         <section id="services">
             <h2>서비스</h2>
-            <p>여기에서는 내가 제공하는 다양한 서비스에 대해 설명합니다.</p>
+            <p>저는 상품 기획을 하고, 상세 페이지를 제작하며, 웹사이트 작업을 쉽게 하기 위해 다양한 방법을 찾고 있습니다.</p>
         </section>
-
         <section id="contact">
             <h2>연락처</h2>
-            <p>이곳에서 나와 연락할 수 있는 정보를 제공합니다.</p>
+            <p>저에게 연락하고 싶다면 이메일을 보내주세요: example@example.com</p>
         </section>
     </main>
-
-    <footer>
-        <div class="container">
-            <p>&copy; 2024 [당신의 이름]. 모든 권리 보유.</p>
-        </div>
-    </footer>
-
     <script src="scripts.js"></script>
 </body>
 </html>
