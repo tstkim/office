@@ -23,7 +23,7 @@ now = datetime.now()  # 현재 시간을 기록
 start_time = time.time()  # 작업 시작 시간을 기록
 print("택수님 ! 작업을 시작할께요.. 조금만 기다려주세요*^.^*")  # 작업 시작 알림
 tdate = now.strftime("%Y%m%d%H%M")
-code = "some_code"  # 적절하게 설정하세요
+code = "dawoori"  # 적절하게 설정하세요
 
 # SSL 오류 방지 설정
 ssl._create_default_https_context = ssl._create_unverified_context
