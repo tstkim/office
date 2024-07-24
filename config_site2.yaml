@@ -1,0 +1,49 @@
+# 브랜드 코드 (예: 'dawoori')
+code: "dawoori"
+
+# 브랜드 이름 (예: '스매싱')
+brandname: "스매싱"
+
+# 카테고리 이름 (예: '학교체육')
+category: "학교체육"
+
+# 가격 인상률 (예: 10% 인상은 1.1로 설정)
+price_increase_rate: 1.1
+
+# 시작 페이지 번호 (크롤링을 시작할 페이지 번호)
+start_page: 1
+
+# 끝 페이지 번호 (크롤링을 종료할 페이지 번호)
+end_page: 1
+
+# 최소 가격 설정 (이 가격 이하의 상품은 크롤링하지 않음)
+minimum_price: 10000
+
+# URL 설정
+urls:
+  # 로그인 페이지 URL
+  login_url: "https://dawoori-sports.kr/member/login"
+  # 카탈로그 페이지 URL (여기서 {page}는 페이지 번호로 대체됨)
+  catalog_url: "https://dawoori-sports.kr/goods/catalog?page={page}&searchMode=catalog&category=c0019&per=20&filter_display=lattice&code=0019"
+
+# CSS 선택자 설정 (HTML 요소를 선택하기 위한 CSS 선택자)
+selectors:
+  # 상품명 선택자 (예: 'span.name'은 상품명을 포함하는 span 태그)
+  product_name: "span.name"
+  # 상품 링크 선택자 (예: 'a'는 상품 링크를 포함하는 앵커 태그)
+  product_link: "a"
+  # 가격 선택자 (예: 'p.org_price span.num'은 가격을 포함하는 span 태그)
+  price: "p.org_price span.num"
+  # 썸네일 이미지 선택자 (예: 'div.viewImgWrap img'은 썸네일 이미지를 포함하는 img 태그)
+  thumbnail: "div.viewImgWrap img"
+  # 옵션 선택자 (예: 'select[name='viewOptions[]'] option:nth-of-type({index})'은 옵션을 포함하는 option 태그)
+  options: "select[name='viewOptions[]'] option:nth-of-type({index})"
+  # 상세 이미지 선택자 (예: '.goods_desc_contents .txc-image'은 상세 이미지를 포함하는 img 태그)
+  detail_images: ".goods_desc_contents .txc-image"
+
+# 로그인 자격 증명 설정
+credentials:
+  # 사용자 이름 (예: 'flowing')
+  username: "flowing"
+  # 비밀번호 (예: 'q6160q6160q')
+  password: "q6160q6160q"
