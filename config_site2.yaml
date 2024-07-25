@@ -1,14 +1,14 @@
 # 브랜드 코드 (예: 'dawoori')
-code: "dawoori"
+code: "star"
 
-# 브랜드 이름 (예: '스매싱')
-brandname: "스매싱"
+# 브랜드 이름 (예: '다우리')
+brandname: "스타스포츠"
 
 # 카테고리 이름 (예: '학교체육')
 category: "학교체육"
 
 # 가격 인상률 (예: 10% 인상은 1.1로 설정)
-price_increase_rate: 1.1
+price_increase_rate: 1
 
 # 시작 페이지 번호 (크롤링을 시작할 페이지 번호)
 start_page: 1
@@ -19,31 +19,126 @@ end_page: 1
 # 최소 가격 설정 (이 가격 이하의 상품은 크롤링하지 않음)
 minimum_price: 10000
 
+# 로그인 필요 여부 (True이면 로그인 필요, False이면 로그인 불필요)
+login_required: True
+
 # URL 설정
 urls:
   # 로그인 페이지 URL
-  login_url: "https://dawoori-sports.kr/member/login"
+  login_url: "https://starsportsmall.co.kr/login.asp"
   # 카탈로그 페이지 URL (여기서 {page}는 페이지 번호로 대체됨)
-  catalog_url: "https://dawoori-sports.kr/goods/catalog?page={page}&searchMode=catalog&category=c0019&per=20&filter_display=lattice&code=0019"
+  catalog_url: "https://starsportsmall.co.kr/goods/submain_new.asp"
 
 # CSS 선택자 설정 (HTML 요소를 선택하기 위한 CSS 선택자)
 selectors:
   # 상품명 선택자 (예: 'span.name'은 상품명을 포함하는 span 태그)
-  product_name: "span.name"
+  product_name: "span.ti"
   # 상품 링크 선택자 (예: 'a'는 상품 링크를 포함하는 앵커 태그)
   product_link: "a"
+  <a href="content.asp?guid=61049&amp;params=cate=0^sword=^swhat=^listsort=new^listtype=album^listsize=20^sprice=^page=">
+						<span class="img" style="background-image:url(https://starsportsmall.co.kr/data/rental/goods/middle/imgB_1_20240716pm20603.jpg);"></span>
+						<span class="txt">
+							<span class="ti">유소년 축구골망 (일반형) </span>
+							<span class="tx">SN252H
+							</span>
+							<span class="pr">
+								<span style="color:#222222;text-decoration:line-through;">170,000</span> / <span style="color:#ae2006;">85,000</span>
+							</span>
+						</span>
+					</a>
   # 가격 선택자 (예: 'p.org_price span.num'은 가격을 포함하는 span 태그)
-  price: "p.org_price span.num"
+  price: 
+  <span style="color:#222222;text-decoration:line-through;">21,000</span>
   # 썸네일 이미지 선택자 (예: 'div.viewImgWrap img'은 썸네일 이미지를 포함하는 img 태그)
-  thumbnail: "div.viewImgWrap img"
+  thumbnail: 
+  <img id="zoom_mw" src="https://starsportsmall.co.kr/data/rental/goods/big/imgB_1_20230324pm31248.jpg" data-zoom-image="https://starsportsmall.co.kr/data/rental/goods/big/imgB_1_20230324pm31248.jpg" border="0" width="410" height="410">
   # 옵션 선택자 (예: 'select[name='viewOptions[]'] option:nth-of-type({index})'은 옵션을 포함하는 option 태그)
-  options: "select[name='viewOptions[]'] option:nth-of-type({index})"
+  options: 
+  
+  <tbody>
+			
+			<tr><input type="hidden" name="guidL" value="56866">
+			<input type="hidden" name="cateL" value="1285">
+			<input type="hidden" name="stockL" value="2715">
+			<input type="hidden" name="optionKindL" value="">
+			<input type="hidden" name="optionTxtL" value="7호">
+
   # 상세 이미지 선택자 (예: '.goods_desc_contents .txc-image'은 상세 이미지를 포함하는 img 태그)
-  detail_images: ".goods_desc_contents .txc-image"
+  detail_images:<div style="text-align:center;">
+								<span style="color:#fff;margin:50px 0px 20px 0px;">
+									<img src="/images/new/goods_content_title.png">
+								</span>
+								
+								
+								<img alt="상단이미지" src="https://sysheen.speedgabia.com/internet_dept/b2b/01_common/topimg_basketball.jpg"><br><br>
+
+<div style="padding-bottom:0;">
+<iframe style="width:860px;height:484px;" src="https://www.youtube.com/embed/fF3wgxDtR1w" frameborder="0" allowfullscreen="" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture">
+</iframe>
+</div><br><br><br>
+<img src="https://sysheen.speedgabia.com/internet_dept/b2b/01_common/basketball/BB6067.jpg"><br><br>
+<img src="https://sysheen.speedgabia.com/internet_dept/b2b/01_common/etc/basketball_size_ref.jpg"><br><br>
+<img src="https://sysheen.speedgabia.com/internet_dept/b2b/01_common/ExchangeReturn_info.jpg"><br><br><br><br>
+
+
+<p></p><p align="left" class="specTit">제품정보</p><p align="center">
+<br></p><div style="padding-bottom:0;" align="center"><table style="width:860px;margin-left:auto;margin-right:auto;" align="center" class="specTable" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<th>품명</th>
+<td>농구공 점보 루키</td></tr>
+<tr>
+<th>모델명</th>
+<td>BB6067(7호)</td></tr>
+<tr>
+<th>둘레</th>
+<td>75~77cm</td></tr>
+<tr>
+<th>중량</th>
+<td>600~650g
+</td></tr>
+<tr>
+<th>색상</th>
+<td>브라운(탄)</td></tr>
+<tr>
+<th>재질</th>
+<td>천연고무</td></tr>
+<tr>
+<th>제품 구성</th>
+<td>농구공 1개</td></tr>
+<tr>
+<th>동일모델의 출시년월</th>
+<td>2019년 3월</td></tr>
+<tr>
+</tr><tr>
+<th>제조자/수입자</th>
+<td>신신상사(주)</td></tr>
+<tr>
+<th>제조국</th>
+<td>중국</td></tr>
+    <tr>
+        <th>KC인증</th>
+        <td>시험성적서번호 : SU22-01294K</td>
+    </tr>
+<tr>
+<th>상품별 세부 사양</th>
+<td>
+- 천연고무 소재 적용<br>
+- 중금속류 및 가소제류에 안전성 검증된 제품<br>
+- 소프트한 터치, 최적의 그립감 및 뛰어난 반발력으로 초보자, 입문자용으로 적합<br>
+- Indoor / Outdoor All Court에서 사용가능
+</td></tr>
+<tr>
+<th>품질보증기준</th>
+<td>제품 이상 시 공정거래위원회 고시 소비자 분쟁 해결 기준에 의거 보상합니다.</td></tr>
+<tr>
+<th>A/S책임자와 전화번호</th>
+<td>신신상사(주) / 010-5823-1438, 카카오톡 아이디 : starsportsas</td></tr></tbody></table></div>
+							</div>
 
 # 로그인 자격 증명 설정
 credentials:
   # 사용자 이름 (예: 'flowing')
-  username: "flowing"
+  username: "ase0164"
   # 비밀번호 (예: 'q6160q6160q')
-  password: "q6160q6160q"
+  password: "hanaro1@"

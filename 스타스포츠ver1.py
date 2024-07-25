@@ -17,7 +17,6 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import urllib.request
-
 import math
 
 # 기본 설정
@@ -28,6 +27,7 @@ price_increase_rate = 1  # 가격 인상률 (예: 10% 인상 1.1)
 start_page = 1  # 시작 페이지 번호
 end_page = 18  # 끝 페이지 번호
 minimum_price = 10000  # 최소 가격 설정
+login_required = True  # 로그인 필요 여부 설정
 
 # 작업 시작 시간 기록
 now = datetime.now()  # 현재 시간을 기록
@@ -81,14 +81,15 @@ wait = WebDriverWait(driver, 5)
 image_counter = 1
 
 try:
-    # 로그인 페이지로 이동
-    driver.get('https://dawoori-sports.kr/member/login')
-    userid_input = driver.find_element(By.NAME, 'userid')
-    password_input = driver.find_element(By.NAME, 'password')
-    userid_input.send_keys('flowing')
-    password_input.send_keys('q6160q6160q')
-    password_input.send_keys(Keys.ENTER)
-    time.sleep(5)
+    if login_required:
+        # 로그인 페이지로 이동
+        driver.get('https://dawoori-sports.kr/member/login')
+        userid_input = driver.find_element(By.NAME, 'userid')
+        password_input = driver.find_element(By.NAME, 'password')
+        userid_input.send_keys('flowing')
+        password_input.send_keys('q6160q6160q')
+        password_input.send_keys(Keys.ENTER)
+        time.sleep(5)
 
     # 페이지 반복 처리
     for page in range(start_page, end_page + 1):
@@ -160,7 +161,7 @@ try:
                         img_url = img_tag.get('data-original')
                         if not img_url or "data/editor/goods/1/2022/05/595_b72e42f565133c8f4ecfb46bec973eaf2017123.jpg" in img_url:
                             continue  # 특정 이미지는 제외하거나 data-original 속성이 없는 경우 제외
-             
+
                         img_url = base_url + img_url
                         img_path = f'{base_path}/detail_{image_counter}.jpg'  # 고유한 파일명 생성
                         urllib.request.urlretrieve(img_url, img_path)
@@ -175,8 +176,6 @@ try:
                             new_combined_image.paste(combined_image, (0, 0))
                             new_combined_image.paste(jm, (0, combined_image.height))
                             combined_image = new_combined_image
-
-
 
                     if combined_image is not None:
                         width, height = combined_image.size
@@ -228,10 +227,10 @@ try:
                 if option_string.count("10000") == 0:
                     option_string = ""
 
-                # print(f"상품명: {product_name}")
-                # print(f"변경된 가격: {adjusted_price}")
-                # print(f"썸네일 이미지 URL: {thumbnail_url}")
-                # print(f"옵션: {option_string}")
+                print(f"상품명: {product_name}")
+                print(f"변경된 가격: {adjusted_price}")
+                print(f"썸네일 이미지 URL: {thumbnail_url}")
+                print(f"옵션: {option_string}")
 
                 # 추가 코드 시작
                 product_code = str(now)[3:4] + str(now)[5:7] + str(now)[8:10] + code + str(image_counter)

@@ -17,17 +17,33 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import urllib.request
-
 import math
 
 # 기본 설정
-code = "dawoori"  # 브랜드영문
-brandname = "다우리"  # 브랜드한글
+code = "star"  # 브랜드영문
+brandname = "스타스포츠"  # 브랜드한글
 category = "학교체육"  # 카테고리 구분
 price_increase_rate = 1  # 가격 인상률 (예: 10% 인상 1.1)
 start_page = 1  # 시작 페이지 번호
-end_page = 18  # 끝 페이지 번호
+end_page = 1  # 끝 페이지 번호
 minimum_price = 10000  # 최소 가격 설정
+login_required = False  # 로그인 필요 여부 설정
+
+# URL 설정
+urls = {
+    "login_url": "https://starsportsmall.co.kr/login.asp",
+    "catalog_url": "https://starsportsmall.co.kr/goods/submain_new.asp"
+}
+
+# CSS 선택자 설정
+selectors = {
+    "product_name": "span.ti",
+    "product_link": "a",
+    "price": "span.pr span:nth-of-type(2)",
+    "thumbnail": "span.img",
+    "detail_images": "div img",
+    "options": "input[name='optionTxtL']"
+}
 
 # 작업 시작 시간 기록
 now = datetime.now()  # 현재 시간을 기록
@@ -72,45 +88,73 @@ chrome_service = Service(ChromeDriverManager().install())
 chrome_options = Options()
 chrome_options.add_argument('--headless')
 chrome_options.add_argument('--disable-gpu')
+chrome_options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36")
+chrome_options.add_argument("--disable-dev-shm-usage")
+chrome_options.add_argument("--no-sandbox")
 
 # 웹드라이버 시작
 driver = webdriver.Chrome(service=chrome_service, options=chrome_options)
 wait = WebDriverWait(driver, 5)
 
+# 테스트 URL 접근 및 디버깅 로그 추가
+try:
+    driver.get("https://starsportsmall.co.kr")
+    print("URL 접근 성공")
+
+    # 페이지 소스 확인
+    page_source = driver.page_source
+    print("페이지 소스 길이:", len(page_source))
+
+    # 카탈로그 페이지 접근
+    catalog_url = "https://starsportsmall.co.kr/goods/submain_new.asp"
+    driver.get(catalog_url)
+    print("카탈로그 페이지 접근 시도")
+
+    # 페이지 소스 확인
+    page_source = driver.page_source
+    print("카탈로그 페이지 소스 길이:", len(page_source))
+
+except Exception as e:
+    print(f"URL 접근 실패: {e}")
+finally:
+    driver.quit()
+
 # 이미지 파일명을 고유하게 만들기 위한 카운터
 image_counter = 1
 
 try:
-    # 로그인 페이지로 이동
-    driver.get('https://dawoori-sports.kr/member/login')
-    userid_input = driver.find_element(By.NAME, 'userid')
-    password_input = driver.find_element(By.NAME, 'password')
-    userid_input.send_keys('flowing')
-    password_input.send_keys('q6160q6160q')
-    password_input.send_keys(Keys.ENTER)
-    time.sleep(5)
+    if login_required:
+        # 로그인 페이지로 이동
+        driver.get(urls["login_url"])
+        userid_input = driver.find_element(By.NAME, 'userid')
+        password_input = driver.find_element(By.NAME, 'password')
+        userid_input.send_keys('ase0164')
+        password_input.send_keys('hanaro1@')
+        password_input.send_keys(Keys.ENTER)
+        time.sleep(5)
 
     # 페이지 반복 처리
     for page in range(start_page, end_page + 1):
-        url = f'https://dawoori-sports.kr/goods/catalog?page={page}&searchMode=catalog&category=c0019&per=20&filter_display=lattice&code=0019'
+        url = f'{urls["catalog_url"]}?page={page}'
         driver.get(url)
         time.sleep(5)
         soup = bs(driver.page_source, 'html.parser')
-        base_url = 'https://dawoori-sports.kr'
-        product_names = soup.find_all('span', class_='name')
-        for product in product_names:
-            product_name = product.get_text(strip=True)
-            product_link = product.find_parent('a')['href']
+        base_url = 'https://starsportsmall.co.kr'
+        product_elements = soup.select(selectors["product_name"])
+        
+        for product_element in product_elements:
+            product_name = product_element.get_text(strip=True)
+            product_link = product_element.find_parent(selectors["product_link"])['href']
             if not product_link.startswith('http'):
                 product_link = base_url + product_link
 
             driver.get(product_link)
             time.sleep(3)
             product_soup = bs(driver.page_source, 'html.parser')
-            product_price_element = product_soup.find('p', class_='org_price')
+            product_price_element = product_soup.select_one(selectors["price"])
 
             if product_price_element:
-                original_price = float(product_price_element.find('span', class_='num').get_text(strip=True).replace(',', ''))
+                original_price = float(product_price_element.get_text(strip=True).replace(',', ''))
                 adjusted_price = math.ceil((original_price * price_increase_rate) / 100) * 100  # 10의 자리에서 올림(100의 자리로 만들기)
 
                 # 최소 가격 이상이 되도록 조정
@@ -118,8 +162,8 @@ try:
                     adjusted_price = " "
 
                 # 썸네일 이미지 주소 추출
-                thumbnail_element = product_soup.find('div', class_='viewImgWrap').find('img')
-                thumbnail_url = thumbnail_element['src'] if thumbnail_element else '썸네일 이미지 없음'
+                thumbnail_element = product_soup.select_one(selectors["thumbnail"])
+                thumbnail_url = thumbnail_element['style'].split('url(')[-1].split(')')[0] if thumbnail_element else '썸네일 이미지 없음'
                 if not thumbnail_url.startswith('http'):
                     thumbnail_url = base_url + thumbnail_url
 
@@ -153,15 +197,13 @@ try:
 
                 # 상세 페이지 이미지 저장 및 자르기
                 try:
-                    detail_images = product_soup.select('.goods_desc_contents .txc-image')
+                    detail_image_elements = product_soup.select(selectors["detail_images"])
                     combined_image = None
 
-                    for img_tag in detail_images:
-                        img_url = img_tag.get('data-original')
-                        if not img_url or "data/editor/goods/1/2022/05/595_b72e42f565133c8f4ecfb46bec973eaf2017123.jpg" in img_url:
-                            continue  # 특정 이미지는 제외하거나 data-original 속성이 없는 경우 제외
-             
-                        img_url = base_url + img_url
+                    for img_tag in detail_image_elements:
+                        img_url = img_tag['src']
+                        if not img_url.startswith('http'):
+                            img_url = base_url + img_url
                         img_path = f'{base_path}/detail_{image_counter}.jpg'  # 고유한 파일명 생성
                         urllib.request.urlretrieve(img_url, img_path)
                         jm = Image.open(img_path).convert("RGB")
@@ -176,8 +218,6 @@ try:
                             new_combined_image.paste(jm, (0, combined_image.height))
                             combined_image = new_combined_image
 
-
-
                     if combined_image is not None:
                         width, height = combined_image.size
                         current_image_num = len(os.listdir(output_path)) // 10 + 1  # 현재 상품 번호 계산
@@ -191,13 +231,9 @@ try:
 
                 # 옵션 추출
                 options = []
-                for a in range(2, 20):
-                    try:
-                        option = product_soup.select_one(f"select[name='viewOptions[]'] option:nth-of-type({a})").get_text(strip=True)
-                        option = option.replace("\n", "").replace("  ", "")
-                    except AttributeError:
-                        option = "없음"
-
+                option_elements = product_soup.select(selectors["options"])
+                for option_element in option_elements:
+                    option = option_element.get('value', '없음').replace("\n", "").replace("  ", "")
                     options.append(option)
 
                 # 옵션 처리
@@ -228,10 +264,10 @@ try:
                 if option_string.count("10000") == 0:
                     option_string = ""
 
-                # print(f"상품명: {product_name}")
-                # print(f"변경된 가격: {adjusted_price}")
-                # print(f"썸네일 이미지 URL: {thumbnail_url}")
-                # print(f"옵션: {option_string}")
+                print(f"상품명: {product_name}")
+                print(f"변경된 가격: {adjusted_price}")
+                print(f"썸네일 이미지 URL: {thumbnail_url}")
+                print(f"옵션: {option_string}")
 
                 # 추가 코드 시작
                 product_code = str(now)[3:4] + str(now)[5:7] + str(now)[8:10] + code + str(image_counter)
@@ -265,7 +301,7 @@ try:
                 detailed_description = "상세설명일괄참조"
                 free_gift = "N"
 
-                if len(detail_images) > 0 and adjusted_price != " ":  # 상세페이지가 있고 가격이 비어있지 않은 경우만
+                if len(detail_image_elements) > 0 and adjusted_price != " ":  # 상세페이지가 있고 가격이 비어있지 않은 경우만
                     sheet.append([product_code, empty_str, brand, manufacturer, origin, product_name, empty_str, empty_str, category, attributes, empty_str, empty_str, empty_str, empty_str, adjusted_price, payment_method, shipping_fee, purchase_quantity, tax_status, inventory, thumbnail_url_final, thumbnail_url_final, empty_str, empty_str, empty_str, empty_str, empty_str, empty_str, empty_str, empty_str, empty_str, empty_str, option_type, option_string, empty_str, empty_str, description, empty_str, empty_str, empty_str, empty_str, coupon, empty_str, category_code, empty_str, empty_str, empty_str, empty_str, empty_str, empty_str, empty_str, empty_str, empty_str, empty_str, empty_str, empty_str, empty_str, empty_str, empty_str, empty_str, weight, detailed_description, detailed_description, detailed_description, detailed_description, detailed_description, detailed_description, free_gift, detailed_description, detailed_description, detailed_description, detailed_description, detailed_description, thumbnail_url])
 
                 image_counter += 1  # 다음 상품을 위해 카운터 증가

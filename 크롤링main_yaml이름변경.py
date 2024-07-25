@@ -69,6 +69,7 @@ def main():
     start_page = config['start_page']
     end_page = config['end_page']
     minimum_price = config['minimum_price']
+    login_required = config['login_required']
 
     urls = config['urls']
     selectors = config['selectors']
@@ -92,13 +93,15 @@ def main():
     image_counter = 1
 
     try:
-        driver.get(urls['login_url'])
-        userid_input = driver.find_element(By.NAME, 'userid')
-        password_input = driver.find_element(By.NAME, 'password')
-        userid_input.send_keys(credentials['username'])
-        password_input.send_keys(credentials['password'])
-        password_input.send_keys(Keys.ENTER)
-        time.sleep(5)
+        # 로그인 필요 여부를 체크하여 로그인 절차를 건너뛸 수 있도록 함
+        if login_required:
+            driver.get(urls['login_url'])
+            userid_input = driver.find_element(By.NAME, 'userid')
+            password_input = driver.find_element(By.NAME, 'password')
+            userid_input.send_keys(credentials['username'])
+            password_input.send_keys(credentials['password'])
+            password_input.send_keys(Keys.ENTER)
+            time.sleep(5)
 
         for page in range(start_page, end_page + 1):
             url = urls['catalog_url'].format(page=page)
@@ -171,7 +174,7 @@ def main():
                             else:
                                 combined_width = max(combined_image.width, jm.width)
                                 combined_height = combined_image.height + jm.height
-                                new_combined_image = Image.new("RGB", (combined_width, combined_height))
+                                new_combined_image = Image.new("RGB", (combined_width, combined_height),"white")
                                 new_combined_image.paste(combined_image, (0, 0))
                                 new_combined_image.paste(jm, (0, combined_image.height))
                                 combined_image = new_combined_image
@@ -221,10 +224,10 @@ def main():
                     if option_string.count("10000") == 0:
                         option_string = ""
 
-                    print(f"상품명: {product_name}")
-                    print(f"변경된 가격: {adjusted_price}")
-                    print(f"썸네일 이미지 URL: {thumbnail_url}")
-                    print(f"옵션: {option_string}")
+                    # print(f"상품명: {product_name}")
+                    # print(f"변경된 가격: {adjusted_price}")
+                    # print(f"썸네일 이미지 URL: {thumbnail_url}")
+                    # print(f"옵션: {option_string}")
 
                     product_code = str(now)[3:4] + str(now)[5:7] + str(now)[8:10] + code + str(image_counter)
                     empty_str = ""
@@ -237,19 +240,19 @@ def main():
                     purchase_quantity = "0"
                     tax_status = "y"
                     inventory = "9000"
-                    thumbnail_url_final = f"http://ai.esmplus.com/tstkimt/{tdate}{code}/cr/{image_counter}_cr.jpg"
+                    thumbnail_url_final = f"http://ai.esmplus.com/tstkimtt/{tdate}{code}/cr/{image_counter}_cr.jpg"
                     option_type = "" if option_string == "" else "SM"
                     description = f"""<center> <img src='http://gi.esmplus.com/tstkimtt/head.jpg' /><br>
-                    <img src='http://ai.esmplus.com/tstkimt/{tdate}{code}/output/{current_image_num}_001.jpg' /><br />
-                    <img src='http://ai.esmplus.com/tstkimt/{tdate}{code}/output/{current_image_num}_002.jpg' /><br />
-                    <img src='http://ai.esmplus.com/tstkimt/{tdate}{code}/output/{current_image_num}_003.jpg' /><br />
-                    <img src='http://ai.esmplus.com/tstkimt/{tdate}{code}/output/{current_image_num}_004.jpg' /><br />
-                    <img src='http://ai.esmplus.com/tstkimt/{tdate}{code}/output/{current_image_num}_005.jpg' /><br />
-                    <img src='http://ai.esmplus.com/tstkimt/{tdate}{code}/output/{current_image_num}_006.jpg' /><br />
-                    <img src='http://ai.esmplus.com/tstkimt/{tdate}{code}/output/{current_image_num}_007.jpg' /><br />
-                    <img src='http://ai.esmplus.com/tstkimt/{tdate}{code}/output/{current_image_num}_008.jpg' /><br />
-                    <img src='http://ai.esmplus.com/tstkimt/{tdate}{code}/output/{current_image_num}_009.jpg' /><br />
-                    <img src='http://ai.esmplus.com/tstkimt/{tdate}{code}/output/{current_image_num}_010.jpg' /><br />
+                    <img src='http://ai.esmplus.com/tstkimtt/{tdate}{code}/output/{current_image_num}_001.jpg' /><br />
+                    <img src='http://ai.esmplus.com/tstkimtt/{tdate}{code}/output/{current_image_num}_002.jpg' /><br />
+                    <img src='http://ai.esmplus.com/tstkimtt/{tdate}{code}/output/{current_image_num}_003.jpg' /><br />
+                    <img src='http://ai.esmplus.com/tstkimtt/{tdate}{code}/output/{current_image_num}_004.jpg' /><br />
+                    <img src='http://ai.esmplus.com/tstkimtt/{tdate}{code}/output/{current_image_num}_005.jpg' /><br />
+                    <img src='http://ai.esmplus.com/tstkimtt/{tdate}{code}/output/{current_image_num}_006.jpg' /><br />
+                    <img src='http://ai.esmplus.com/tstkimtt/{tdate}{code}/output/{current_image_num}_007.jpg' /><br />
+                    <img src='http://ai.esmplus.com/tstkimtt/{tdate}{code}/output/{current_image_num}_008.jpg' /><br />
+                    <img src='http://ai.esmplus.com/tstkimtt/{tdate}{code}/output/{current_image_num}_009.jpg' /><br />
+                    <img src='http://ai.esmplus.com/tstkimtt/{tdate}{code}/output/{current_image_num}_010.jpg' /><br />
                     <img src='http://gi.esmplus.com/tstkimtt/deliver.jpg' /></center>"""
                     coupon = "쿠폰"
                     category_code = "c"
@@ -258,7 +261,7 @@ def main():
                     free_gift = "N"
 
                     if len(detail_images) > 0 and adjusted_price != " ":
-                        sheet.append([product_code, empty_str, brand, manufacturer, origin, product_name, empty_str, empty_str, category, attributes, empty_str, empty_str, empty_str, empty_str, adjusted_price, payment_method, shipping_fee, purchase_quantity, tax_status, inventory, thumbnail_url_final, thumbnail_url_final, empty_str, empty_str, empty_str, empty_str, empty_str, empty_str, empty_str, empty_str, empty_str, empty_str, option_type, option_string, empty_str, empty_str, description, empty_str, empty_str, empty_str, empty_str, coupon, empty_str, category_code, empty_str, empty_str, empty_str, empty_str, empty_str, empty_str, empty_str, empty_str, empty_str, empty_str, empty_str, empty_str, empty_str, weight, detailed_description, detailed_description, detailed_description, detailed_description, detailed_description, detailed_description, detailed_description, detailed_description, detailed_description, free_gift, detailed_description, detailed_description, detailed_description, detailed_description, detailed_description, thumbnail_url])
+                        sheet.append([product_code, empty_str, brand, manufacturer, origin, product_name, empty_str, empty_str, category, attributes, empty_str, empty_str, empty_str, empty_str, adjusted_price, payment_method, shipping_fee, purchase_quantity, tax_status, inventory, thumbnail_url_final, thumbnail_url_final, empty_str, empty_str, empty_str, empty_str, empty_str, empty_str, empty_str, empty_str, empty_str, empty_str, option_type, option_string, empty_str, empty_str, description, empty_str, empty_str, empty_str, empty_str, coupon, empty_str, category_code, empty_str, empty_str, empty_str, empty_str, empty_str, empty_str, empty_str, empty_str, empty_str, empty_str, empty_str, empty_str, empty_str, empty_str, empty_str, empty_str, weight, detailed_description, detailed_description, detailed_description, detailed_description, detailed_description, detailed_description, free_gift, detailed_description, detailed_description, detailed_description, detailed_description, detailed_description, thumbnail_url])
 
                     image_counter += 1
 
