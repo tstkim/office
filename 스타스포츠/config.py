@@ -12,7 +12,7 @@ base_url = "https://starsportsmall.co.kr"
 # URL 설정
 urlinput = "https://starsportsmall.co.kr/goods/submain_new.asp?page={}&cate=0&sword=&swhat=&listsort=new&listtype=album&listsize=20&sprice="
 rangeFir = 1
-rangeLas = 3
+rangeLas = 2
 
 # 작업 시작 시간 기록
 now = datetime.now()

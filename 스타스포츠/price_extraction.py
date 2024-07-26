@@ -17,11 +17,11 @@ def extract_prices():
                 price = price.replace(",", "").replace("원", "")
                 original_price = float(price)
                 adjusted_price = math.ceil((original_price * price_increase_rate) / 100) * 100
-                if adjusted_price < minimum_price:
-                    adjusted_price = minimum_price
+                if adjusted_price >= minimum_price:
+                    print(f"가격: {adjusted_price}")
             except (AttributeError, ValueError):
                 adjusted_price = "가격 정보 없음"
-            print(f"가격: {adjusted_price}")
+
 
 if __name__ == "__main__":
     extract_prices()

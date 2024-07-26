@@ -4,7 +4,7 @@ import folder_setup
 import product_name_extraction
 import price_extraction
 import thumbnail_extraction
-import option_extraction
+import 스타스포츠.option_extraction_back as option_extraction_back
 import detail_page_extraction
 
 def main():
@@ -13,7 +13,7 @@ def main():
     product_name_extraction.extract_product_names()
     price_extraction.extract_prices()
     thumbnail_extraction.extract_thumbnails()
-    option_extraction.extract_options()
+    option_extraction_back.extract_options()
     detail_page_extraction.extract_detail_pages()
     print("Script completed successfully.")
 
