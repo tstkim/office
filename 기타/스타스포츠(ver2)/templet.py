@@ -18,8 +18,16 @@ brandname = "다우리"  # 브랜드한글
 category = "학교체육"  # 카테고리 구분
 price_increase_rate = 1  # 가격 인상률 (예: 10% 인상 1.1)
 start_page = 1  # 시작 페이지 번호
-end_page = 18  # 끝 페이지 번호
+end_page = 1  # 끝 페이지 번호
 minimum_price = 10000  # 최소 가격 설정
+use_login = True  # 로그인 사용 여부
+login_url = 'https://dawoori-sports.kr/member/login'  # 로그인 페이지 URL
+catalog_url_template = 'https://dawoori-sports.kr/goods/catalog?page={page}&searchMode=catalog&category=c0019&per=20&filter_display=lattice&code=0019'  # 카탈로그 페이지 URL 템플릿
+product_base_url = 'https://dawoori-sports.kr'  # 제품 페이지 베이스 URL
+login_credentials = {
+    'userid': 'flowing',
+    'password': 'q6160q6160q'
+}
 
 # 작업 시작 시간 기록
 now = datetime.now()  # 현재 시간을 기록
@@ -61,27 +69,28 @@ sheet.append([
 
 # Playwright를 사용한 웹드라이버 설정 및 시작
 with sync_playwright() as p:
-    browser = p.chromium.launch(headless=False)
+    browser = p.chromium.launch(headless=True)
     page = browser.new_page()
 
     # 이미지 파일명을 고유하게 만들기 위한 카운터
     image_counter = 1
 
     try:
-        # 로그인 페이지로 이동
-        page.goto('https://dawoori-sports.kr/member/login')
-        page.fill('input[name="userid"]', 'flowing')
-        page.fill('input[name="password"]', 'q6160q6160q')
-        page.press('input[name="password"]', 'Enter')
-        page.wait_for_timeout(5000)
+        if use_login:
+            # 로그인 페이지로 이동
+            page.goto(login_url)
+            page.fill('input[name="userid"]', login_credentials['userid'])
+            page.fill('input[name="password"]', login_credentials['password'])
+            page.press('input[name="password"]', 'Enter')
+            page.wait_for_timeout(5000)
 
         # 페이지 반복 처리
         for page_number in range(start_page, end_page + 1):
-            url = f'https://dawoori-sports.kr/goods/catalog?page={page_number}&searchMode=catalog&category=c0019&per=20&filter_display=lattice&code=0019'
+            url = catalog_url_template.format(page=page_number)
             page.goto(url)
             page.wait_for_timeout(5000)
             soup = bs(page.content(), 'html.parser')
-            base_url = 'https://dawoori-sports.kr'
+            base_url = product_base_url
             product_names = soup.find_all('span', class_='name')
             for product in product_names:
                 product_name = product.get_text(strip=True)
@@ -225,18 +234,12 @@ with sync_playwright() as p:
                     inventory = "9000"
                     thumbnail_url_final = f"http://ai.esmplus.com/tstkimtt/{tdate}{code}/cr/{image_counter}_cr.jpg"  # 날짜 수정할 것
                     option_type = "" if option_string == "" else "SM"
-                    description = f"""<center> <img src='http://gi.esmplus.com/tstkimtt/head.jpg' /><br>
-                    <img src='http://ai.esmplus.com/tstkimtt/{tdate}{code}/output/{current_image_num}_001.jpg' /><br />
-                    <img src='http://ai.esmplus.com/tstkimtt/{tdate}{code}/output/{current_image_num}_002.jpg' /><br />
-                    <img src='http://ai.esmplus.com/tstkimtt/{tdate}{code}/output/{current_image_num}_003.jpg' /><br />
-                    <img src='http://ai.esmplus.com/tstkimtt/{tdate}{code}/output/{current_image_num}_004.jpg' /><br />
-                    <img src='http://ai.esmplus.com/tstkimtt/{tdate}{code}/output/{current_image_num}_005.jpg' /><br />
-                    <img src='http://ai.esmplus.com/tstkimtt/{tdate}{code}/output/{current_image_num}_006.jpg' /><br />
-                    <img src='http://ai.esmplus.com/tstkimtt/{tdate}{code}/output/{current_image_num}_007.jpg' /><br />
-                    <img src='http://ai.esmplus.com/tstkimtt/{tdate}{code}/output/{current_image_num}_008.jpg' /><br />
-                    <img src='http://ai.esmplus.com/tstkimtt/{tdate}{code}/output/{current_image_num}_009.jpg' /><br />
-                    <img src='http://ai.esmplus.com/tstkimtt/{tdate}{code}/output/{current_image_num}_010.jpg' /><br />
-                    <img src='http://gi.esmplus.com/tstkimtt/deliver.jpg' /></center>"""
+
+                    description = "<center> <img src='http://gi.esmplus.com/tstkimtt/head.jpg' /><br>"
+                    for i in range(1, 11):
+                        description += f"<img src='http://ai.esmplus.com/tstkimtt/{tdate}{code}/output/{current_image_num:03}_{i:03}.jpg' /><br />"
+                    description += "<img src='http://gi.esmplus.com/tstkimtt/deliver.jpg' /></center>"
+
                     coupon = "쿠폰"
                     category_code = "c"
                     weight = "25"

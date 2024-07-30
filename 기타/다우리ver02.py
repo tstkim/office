@@ -180,12 +180,14 @@ try:
 
                     if combined_image is not None:
                         width, height = combined_image.size
-                        current_image_num = len(os.listdir(output_path)) // 10 + 1  # 현재 상품 번호 계산
+                        current_image_num = image_counter  # 현재 상품 번호 계산
+                        slice_height = height // 10  # 이미지 하나의 높이
                         for i in range(10):
-                            crop_area = (0, height * (i * 0.1), width, height * ((i + 1) * 0.1))
+                            crop_area = (0, slice_height * i, width, slice_height * (i + 1))  # ##이부분 수정됨
                             cropped_img = combined_image.crop(crop_area)
-                            cropped_img.save(f'{output_path}/{current_image_num}_{i + 1:03}.jpg')
+                            cropped_img.save(f'{output_path}/{current_image_num:03}_{i + 1:03}.jpg')
                         combined_image.close()
+
                 except (ValueError, urllib.error.HTTPError, urllib.error.URLError, FileNotFoundError) as e:
                     print(f"상세 페이지 이미지 처리 중 오류 발생: {e}")
 
