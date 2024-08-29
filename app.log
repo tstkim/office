@@ -2206,3 +2206,7 @@ INFO:root:No image element found for index 3
 INFO:root:No image element found for index 4
 INFO:root:Invalid image URL skipped: /images/new/goods_content_title.png
 INFO:root:Invalid image URL skipped: https://sysheen.speedgabia.com/internet_dept/b2b/01_common/ExchangeReturn_info.jpg
+ERROR:root:페이지 처리 중 오류 발생: Invalid character ']' position 6
+  line 1:
+p.name]
+      ^

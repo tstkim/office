@@ -6,7 +6,7 @@ urlinput="http://www.kidgym.co.kr/product/list.html?cate_no=25&page={}"
 
 #3. 크롤링 페이지 범위지정
 rangeFir=1
-raageLas=31
+raageLas=2
 #4. 코드명변경(폴더명)
 code="kidgym"
 codek="키드짐"

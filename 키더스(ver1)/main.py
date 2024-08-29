@@ -42,11 +42,16 @@ with sync_playwright() as p:
                 base_url = product_base_url
 
                 # 제품명
-                product_names = soup.select("div.mList1 ul li")
+                product_list = soup.select("li.df-prl-item.xans-record-")   #도는 패턴
 
-                for product in product_names:
+                #print(product_list)
+
+                for product in product_list:
                     try:
-                        product_name = product.select_one("span.ti").get_text(strip=True)
+                        # 상품명 텍스트를 포함한 전체 텍스트 가져오기
+                        full_text = product.select_one("a.df-prl-name").get_text(strip=True)
+                        # "상품명:" 이후의 텍스트만 추출
+                        product_name = full_text.split(":", 1)[-1].strip()  ##이부분 수정됨
                     except AttributeError:
                         product_name = "상품명을 찾을 수 없습니다."
                     # print(f"상품명: {product_name}")  # 주석 처리
@@ -60,10 +65,11 @@ with sync_playwright() as p:
                             product_link = "링크를 찾을 수 없습니다."
 
                         if not product_link.startswith('http'):
-                            product_link = base_url2 + product_link
+                            product_link = base_url + product_link
                     except Exception as e:
                         logging.error(f"상품 링크 추출 중 오류 발생: {e}")
                         continue
+                    #print(product_link)
 
                     # 상품페이지 이동
                     try:
@@ -76,7 +82,7 @@ with sync_playwright() as p:
 
                     # 가격
                     try:
-                        price = product_soup.select_one("#frm > div > div.info-con > table > tbody > tr:nth-child(1) > td > div > strong > b > span:nth-child(1)").get_text(strip=True)
+                        price = product_soup.select_one("#span_product_price_text").get_text(strip=True)
                         price = price.replace(",", "").replace("원", "")
                         original_price = float(price)
                         adjusted_price = math.ceil((original_price * price_increase_rate) / 100) * 100
@@ -85,17 +91,21 @@ with sync_playwright() as p:
                     except (AttributeError, ValueError):
                         adjusted_price = "가격 정보 없음"
 
+                    #print(price)
+
                     # 썸네일 이미지 주소 추출
                     try:
-                        thumbnail_element = product_soup.select_one("img#zoom_mw")
+                        thumbnail_element = product_soup.select_one("div.thumb img")
                         if thumbnail_element:
-                            thumbnail_url = thumbnail_element.get('data-zoom-image')
+                            thumbnail_url = thumbnail_element.get("src")
+                            if thumbnail_url.startswith('//'):
+                               thumbnail_url = 'https:' + thumbnail_url
                         else:
                             thumbnail_url = None
                     except Exception as e:
                         logging.error(f"썸네일 이미지 주소 추출 중 오류 발생: {e}")
                         thumbnail_url = None
-
+                    # print(thumbnail_url)
                     # 썸네일 이미지 저장 및 새로운 캔버스에 편집
                     try:
                         if thumbnail_url:
@@ -138,116 +148,80 @@ with sync_playwright() as p:
 
                     # 상세 페이지 이미지 저장 및 자르기
                     try:
-                        detail_images = []
-                        for p in range(1, 5):
-                            try:
-                                image_element = product_soup.select_one(f"div.tab-con img:nth-of-type({p})")
-                                if image_element:
-                                    image_url = image_element.get("src")
-                                    if image_url and not image_url.endswith('.png') and "https://sysheen.speedgabia.com/internet_dept/b2b/01_common/ExchangeReturn_info.jpg" not in image_url:
-                                        detail_images.append(image_url)
-                                    else:
-                                        logging.info(f"Invalid image URL skipped: {image_url}")
-                                else:
-                                    logging.info(f"No image element found for index {p}")
-                            except AttributeError as e:
-                                logging.error(f"AttributeError: {e}")
-                                detail_images.append("")
+                     
+                        # prdDetail 내부의 모든 img 태그를 추출
+                        detail_images = product_soup.select('#prdDetail img')
+                        combined_image = None
 
-                        # 상품 세부 정보 추출
-                        try:
-                            spec_table = product_soup.select_one("table.specTable")
-                            if spec_table:
-                                rows = spec_table.select("tr")
-                                product_details = {}
-                                for row in rows:
-                                    th = row.select_one("th").get_text(strip=True)
-                                    td = row.select_one("td").get_text(strip=True)
-                                    product_details[th] = td
-                        except Exception as e:
-                            logging.error(f"상품 세부 정보 추출 중 오류 발생: {e}")
-                            product_details = {}
+                        for img_tag in detail_images:
+                            img_url = img_tag.get('src')
+                            if not img_url in img_url:
+                                continue  # 특정 이미지는 제외하거나 src 속성이 없는 경우 제외
 
-                        # 상세 이미지 다운로드 및 결합
-                        try:
-                            combined_image = None
-                            for img_url in detail_images:
-                                img_path = f'{base_path}/detail_{image_counter}.jpg'
-                                urllib.request.urlretrieve(img_url, img_path)
-                                jm = Image.open(img_path).convert("RGB")
+                            # 상대 경로인 경우 base_url 추가
+                            if img_url.startswith('//'):
+                                img_url = 'https:' + img_url
+                            elif img_url.startswith('/'):
+                                img_url = base_url + img_url
+                            
+                            # 이미지 다운로드 및 로컬 저장 경로 설정
+                            img_path = f'{base_path}/detail_{image_counter}.jpg'  # 고유한 파일명 생성
+                            urllib.request.urlretrieve(img_url, img_path)
+                            jm = Image.open(img_path).convert("RGB")
 
-                                if combined_image is None:
-                                    combined_image = jm
-                                else:
-                                    combined_width = max(combined_image.width, jm.width)
-                                    combined_height = combined_image.height + jm.height
-                                    new_combined_image = Image.new("RGB", (combined_width, combined_height), "white")
-                                    new_combined_image.paste(combined_image, (0, 0))
-                                    new_combined_image.paste(jm, (0, combined_image.height))
-                                    combined_image = new_combined_image
-
-                            # 상품 세부 정보 이미지를 생성하여 결합
-                            if product_details:
-                                info_image = Image.new("RGB", (combined_image.width, 400), "white")
-                                draw = ImageDraw.Draw(info_image)
-                                font = ImageFont.truetype("C:/Windows/Fonts/NanumGothic.ttf", 18)
-                                y_text = 10
-                                max_width = 800  # 줄바꿈을 원하는 최대 너비
-
-                                for key, value in product_details.items():
-                                    text = f"{key}: {value}"
-                                    lines = []
-                                    words = text.split(' ')
-                                    line = ''
-                                    for word in words:
-                                        test_line = f"{line} {word}".strip()
-                                        width, _ = draw.textbbox((0, 0), test_line, font=font)[2:]
-                                        if width <= max_width:
-                                            line = test_line
-                                        else:
-                                            lines.append(line)
-                                            line = word
-                                    lines.append(line)  # 마지막 라인 추가
-
-                                    for line in lines:
-                                        draw.text((10, y_text), line, font=font, fill="black")
-                                        y_text += 30
-
-                                # 이미지 결합
-                                combined_width = max(combined_image.width, info_image.width)
-                                combined_height = combined_image.height + info_image.height
+                            # 이미지를 하나로 합치기
+                            if combined_image is None:
+                                combined_image = jm
+                            else:
+                                combined_width = max(combined_image.width, jm.width)
+                                combined_height = combined_image.height + jm.height
                                 new_combined_image = Image.new("RGB", (combined_width, combined_height), "white")
                                 new_combined_image.paste(combined_image, (0, 0))
-                                new_combined_image.paste(info_image, (0, combined_image.height))
+                                new_combined_image.paste(jm, (0, combined_image.height))
                                 combined_image = new_combined_image
 
-                            if combined_image is not None:
-                                width, height = combined_image.size
-                                current_image_num = image_counter  # 현재 상품 번호 계산
-                                slice_height = height // 10  # 이미지 하나의 높이
-                                for i in range(10):
-                                    crop_area = (0, slice_height * i, width, slice_height * (i + 1))
-                                    cropped_img = combined_image.crop(crop_area)
-                                    cropped_img.save(f'{output_path}/{current_image_num:03}_{i + 1:03}.jpg')
-                                combined_image.close()
-                        except Exception as e:
-                            logging.error(f"상세 이미지 처리 중 오류 발생: {e}")
-                            continue
+                        # 이미지 자르기 및 저장
+                        if combined_image is not None:
+                            width, height = combined_image.size
+                            current_image_num = image_counter  # 현재 상품 번호 계산
+                            slice_height = height // 10  # 이미지 하나의 높이
+                            for i in range(10):
+                                crop_area = (0, slice_height * i, width, slice_height * (i + 1))  # 이미지 자르는 영역 설정
+                                cropped_img = combined_image.crop(crop_area)  # 이미지 자르기
+                                cropped_img.save(f'{output_path}/{current_image_num:03}_{i + 1:03}.jpg')  # 잘린 이미지 저장
+                            combined_image.close()
 
-                    except (ValueError, urllib.error.HTTPError, urllib.error.URLError, FileNotFoundError) as e:
-                        logging.error(f"상세 페이지 이미지 처리 중 오류 발생: {e}")
-                        continue
+                    except Exception as e:
+                        print(f"오류 발생: {e}")
 
-                    # 옵션 추출
+
+                    # 옵션 추출 및 추가금액 파싱
                     try:
                         options = []
-                        for a in range(2, 20):
-                            try:
-                                option = product_soup.select_one(f"select[name='viewOptions[]'] option:nth-of-type({a})").get_text(strip=True)
-                                option = option.replace("\n", "").replace("  ", "")
-                            except AttributeError:
-                                option = "없음"
-                            options.append(option)
+                        option_tags = product_soup.select('select[name="option1"] option')
+
+                        for option_tag in option_tags:
+                            option_value = option_tag.get_text(strip=True)  # 옵션 텍스트 추출
+                            if option_value and '필수' not in option_value and '---' not in option_value:
+                                # 추가 금액 추출 (옵션명에서 추출)
+                                option_name = option_value.split('(')[0].strip()
+                                price_change = "0"
+                                
+                                # 추가 금액이 존재하는 경우 (예: (+25,000원) 또는 (-208,600원))
+                                if '(' in option_value and ')' in option_value:
+                                    price_info = option_value.split('(')[1].split(')')[0].strip()
+                                    if '+' in price_info:
+                                        # 양수 추가 금액일 경우 '+' 기호 제거
+                                        price_change = price_info.replace(',', '').replace('원', '').replace('+', '').strip()
+                                    elif '-' in price_info:
+                                        # 음수 추가 금액일 경우 '-' 기호 유지
+                                        price_change = price_info.replace(',', '').replace('원', '').strip()
+
+                                options.append((option_name, price_change))
+
+                        if not options:
+                            options.append(("없음", "0"))
+
                     except Exception as e:
                         logging.error(f"옵션 추출 중 오류 발생: {e}")
                         options = []
@@ -255,21 +229,23 @@ with sync_playwright() as p:
                     # 옵션 처리
                     try:
                         option_string = []  # 옵션 리스트 초기화
-                        for a in range(1, 10):
-                            try:
-                                option = product_soup.select_one(f"tbody tr:nth-of-type({a}) input[name='optionTxtL']")
-                                option = option["value"] if option else "없음"
-                            except (AttributeError, TypeError):
-                                option = "없음"
-                            option_string.append(option)
+
+                        for option_name, price_change in options:
+                            formatted_option = f"{option_name}=={price_change}=10000=0=0=0="
+                            option_string.append(formatted_option)
 
                         if not option_string:
                             option_string.append("없음")
 
-                        formatted_options = "==0=10000=0=0=0=\n".join(option_string)
-                        option_string = "[필수선택]\n" + formatted_options.split("없음")[0]
+                        formatted_options = "\n".join(option_string)
+                        option_string = "[필수선택]\n" + formatted_options
+
+                        # 조건에 따라 최종 옵션 문자열 출력
                         if option_string.count("10000") == 1:
                             option_string = ""
+
+                        # print("옵션 문자열:\n", option_string)
+
                     except Exception as e:
                         logging.error(f"옵션 처리 중 오류 발생: {e}")
                         option_string = ""
@@ -309,6 +285,7 @@ with sync_playwright() as p:
                         logging.error(f"상품 데이터 추가 중 오류 발생: {e}")
                         continue
 
+  
             except Exception as e:
                 logging.error(f"페이지 처리 중 오류 발생: {e}")
                 continue
